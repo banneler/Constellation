@@ -216,15 +216,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- RENDER FUNCTIONS ---
   const render = () => {
-    renderDashboard();
-    renderContactList();
-    renderAccountList();
-    renderSequenceList();
-    renderDealsPage();
-    renderContactDetails();
-    renderAccountDetails();
-    renderSequenceSteps();
-    renderDealsMetrics();
+    // Defensive rendering: wrap each call individually
+    try {
+      renderDashboard();
+      console.log("DEBUG: renderDashboard() completed successfully.");
+    } catch (e) { console.error("Error in renderDashboard:", e); }
+    
+    try {
+      renderContactList();
+      console.log("DEBUG: renderContactList() completed successfully.");
+    } catch (e) { console.error("Error in renderContactList:", e); }
+
+    try {
+      renderAccountList();
+      console.log("DEBUG: renderAccountList() completed successfully.");
+    } catch (e) { console.error("Error in renderAccountList:", e); }
+
+    try {
+      renderSequenceList();
+      console.log("DEBUG: renderSequenceList() completed successfully.");
+    } catch (e) { console.error("Error in renderSequenceList:", e); }
+
+    try {
+      renderDealsPage();
+      console.log("DEBUG: renderDealsPage() completed successfully.");
+    } catch (e) { console.error("Error in renderDealsPage:", e); }
+
+    try {
+      renderContactDetails();
+      console.log("DEBUG: renderContactDetails() completed successfully.");
+    } catch (e) { console.error("Error in renderContactDetails:", e); }
+
+    try {
+      renderAccountDetails();
+      console.log("DEBUG: renderAccountDetails() completed successfully.");
+    } catch (e) { console.error("Error in renderAccountDetails:", e); }
+
+    try {
+      renderSequenceSteps();
+      console.log("DEBUG: renderSequenceSteps() completed successfully.");
+    } catch (e) { console.error("Error in renderSequenceSteps:", e); }
+
+    try {
+      renderDealsMetrics();
+      console.log("DEBUG: renderDealsMetrics() completed successfully.");
+    } catch (e) { console.error("Error in renderDealsMetrics:", e); }
   };
 
   const renderContactList = () => {
