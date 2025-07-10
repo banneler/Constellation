@@ -108,6 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const metricBestCase = document.getElementById("metric-best-case");
   const metricFunnel = document.getElementById("metric-funnel");
   const MONTHLY_QUOTA = 5000;
+  // --- NEW THEME ELEMENTS ---
+  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  const themeNameSpan = document.getElementById("theme-name");
 
   // --- UTILITIES ---
   const formatDate = (ds) => (ds ? new Date(ds).toLocaleString() : "");
@@ -197,8 +200,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Critical error in loadAllData:", error);
     } finally {
-      render();
+      // Hide the loader immediately, regardless of render success.
       loaderOverlay.classList.add("hidden");
+      
+      // Now, wrap the render call in its own try...catch block
+      // to see if it's the source of the freeze.
+      try {
+          render();
+      } catch (renderError) {
+          console.error("A critical error occurred during the render process:", renderError);
+          alert("A critical error occurred while displaying the data. Please check the console (F12) for details.");
+      }
     }
   }
 
@@ -315,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const lastCompleted = currentStep - 1;
           const percentage =
             totalSteps > 0 ? Math.round((lastCompleted / totalSteps) * 100) : 0;
-          ringChart.style.background = `conic-gradient(#98FF98 ${percentage}%, #3c3c3c ${percentage}%)`;
+          ringChart.style.background = `conic-gradient(var(--completed-color) ${percentage}%, #3c3c3c ${percentage}%)`;
           ringChartText.textContent = `${lastCompleted}/${totalSteps}`;
           contactSequenceInfoText.textContent = `Enrolled in "${sequence.name}" (On Step ${currentStep} of ${totalSteps}).`;
           sequenceStatusContent.classList.remove("hidden");
@@ -711,6 +723,23 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadAllData();
   }
 
+  // --- THEME TOGGLE LOGIC ---
+  const themes = ['dark', 'light', 'green'];
+  let currentThemeIndex = 0;
+
+  function applyTheme(themeName) {
+    document.body.className = `theme-${themeName}`;
+    const capitalizedThemeName = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+    themeNameSpan.textContent = capitalizedThemeName;
+    localStorage.setItem('crm-theme', themeName);
+  }
+
+  function cycleTheme() {
+    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+    const newTheme = themes[currentThemeIndex];
+    applyTheme(newTheme);
+  }
+
   // --- EVENT LISTENER SETUP ---
   function setupAuthEventListeners() {
     let isLoginMode = true;
@@ -754,6 +783,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setupCrmEventListeners() {
+    // Add the theme toggle listener
+    themeToggleBtn.addEventListener("click", cycleTheme);
+      
     modalConfirmBtn.addEventListener(
       "click",
       () => onConfirmCallback && onConfirmCallback()
@@ -765,10 +797,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     navButtons.forEach((button) => {
-      if (button.id === "debug-btn" || button.id === "logout-btn") return;
+      // Exclude the new theme button from the view-switching logic
+      if (button.id === "debug-btn" || button.id === "logout-btn" || button.id === 'theme-toggle-btn') return;
       button.addEventListener("click", (e) => {
         const targetId = e.currentTarget.dataset.target;
-        navButtons.forEach((b) => b.classList.remove("active"));
+        navButtons.forEach((b) => {
+            if (b.id !== 'theme-toggle-btn') {
+                b.classList.remove("active")
+            }
+        });
         e.currentTarget.classList.add("active");
         contentViews.forEach((v) =>
           v.classList.toggle("active-view", v.id === targetId)
@@ -1416,6 +1453,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function initializeApp() {
     setupAuthEventListeners();
     let isCrmInitialized = false;
+
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('crm-theme') || 'dark';
+    const savedThemeIndex = themes.indexOf(savedTheme);
+    currentThemeIndex = savedThemeIndex !== -1 ? savedThemeIndex : 0;
+    applyTheme(themes[currentThemeIndex]);
 
     supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event fired:", event);
